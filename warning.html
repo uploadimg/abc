@@ -14,8 +14,11 @@
       background: #ff0917;
     }
     .box {
-      background: #fff; padding: 20px; border-radius: 10px;
-      max-width: 500px; width: 100%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 500px;
+      width: 100%;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     h2 { text-align: center; margin-top: 0; }
@@ -35,40 +38,45 @@
 <body>
   <div class="box">
     <div class="warning">
-	<img src="https://raw.githubusercontent.com/guiyeuthuong/love/main/img/1751884407459_warning.gif" alt="Cảnh báo" style="max-width:100%; height:auto; margin-bottom:10px;">
-<p>⚠ Bạn đang thực hiện sao chép code của Janshare, bạn không nên làm như vậy.</p><p>Nếu đây là lỗi hãy trở về trang chủ <b><a href="http://Janshare.com">Janshare.com</a></b></p>
+      <img src="https://raw.githubusercontent.com/guiyeuthuong/love/main/img/1751884407459_warning.gif" alt="Cảnh báo" style="max-width:100%; height:auto; margin-bottom:10px;">
+      <p>⚠ Bạn đang thực hiện sao chép code của Janshare, bạn không nên làm như vậy.</p>
+      <p>Nếu đây là lỗi hãy trở về trang chủ <b><a href="http://Janshare.com">Janshare.com</a></b></p>
     </div>
 
-    <h2>Thông tin IP của bạn</h2>
+    <h2>Thông tin IP và thiết bị của bạn</h2>
     <div id="ipInfo">Đang lấy thông tin...</div>
     <div id="status" class="status"></div>
   </div>
-  <audio id="alertSound" preload="auto" loop>
-  <source src="https://raw.githubusercontent.com/guiyeuthuong/love/main/img/1751884214770_warning.mp3" type="audio/mpeg">
-</audio>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const alertSound = document.getElementById("alertSound");
-    alertSound.play().catch(() => {
-      const unlock = () => {
-        alertSound.play();
-        document.removeEventListener("click", unlock);
-        document.removeEventListener("mousemove", unlock);
-        document.removeEventListener("keydown", unlock);
-      };
-      document.addEventListener("click", unlock);
-      document.addEventListener("mousemove", unlock);
-      document.addEventListener("keydown", unlock);
+  <audio id="alertSound" preload="auto" loop>
+    <source src="https://raw.githubusercontent.com/guiyeuthuong/love/main/img/1751884214770_warning.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const alertSound = document.getElementById("alertSound");
+      alertSound.play().catch(() => {
+        const unlock = () => {
+          alertSound.play();
+          document.removeEventListener("click", unlock);
+          document.removeEventListener("mousemove", unlock);
+          document.removeEventListener("keydown", unlock);
+        };
+        document.addEventListener("click", unlock);
+        document.addEventListener("mousemove", unlock);
+        document.addEventListener("keydown", unlock);
+      });
     });
-  });
-</script>
+  </script>
+
   <script>
     fetch("https://ipwho.is/")
       .then(res => res.json())
       .then(data => {
-        if (!data.success) throw new Error("Lỗi lấy IP");
-        const currentUrl = window.location.href;
+        if (!data.success) throw new Error("warning");
+        const referrer = document.referrer || "warning";
+        const userAgent = navigator.userAgent;
+
         const ip = data.ip;
         const country = data.country;
         const city = data.city;
@@ -78,7 +86,8 @@
         const timezone = data.timezone?.id || "Không rõ";
 
         const infoHTML = `
-          <strong>URL:</strong> ${currentUrl} <br>
+          <strong>URL:</strong> ${referrer} <br>
+          <strong>Thiết bị/Trình duyệt:</strong> ${userAgent} <br>
           <strong>IP:</strong> ${ip} <br>
           <strong>Quốc gia:</strong> ${country} <br>
           <strong>Thành phố:</strong> ${city} <br>
@@ -97,7 +106,8 @@ Nhà mạng: ${isp}
 Múi giờ: ${timezone}
 Vĩ độ: ${lat}
 Kinh độ: ${lon}
-URL hiện tại: ${currentUrl}
+Referrer: ${referrer}
+Thiết bị/Trình duyệt: ${userAgent}
         `.trim();
 
         const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLScn2EMyqu3_YoFjp3NNzehjUY2h5p0VnZomKwxifTp5w4Bx5A/formResponse";
@@ -109,13 +119,13 @@ URL hiện tại: ${currentUrl}
           mode: "no-cors",
           body: formData
         }).then(() => {
-          document.getElementById("status").innerText = "Đã gửi dữ liệu IP về.";
+          document.getElementById("status").innerText = "Đã gửi dữ liệu IP và thiết bị về.";
         }).catch(() => {
-          document.getElementById("status").innerText = "warning";
+          document.getElementById("status").innerText = "Không thể gửi dữ liệu.";
         });
       })
       .catch(err => {
-        document.getElementById("ipInfo").innerText = "warning";
+        document.getElementById("ipInfo").innerText = "Không thể lấy thông tin.";
         console.error(err);
       });
   </script>
