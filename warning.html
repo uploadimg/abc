@@ -38,7 +38,7 @@
 <body>
   <div class="box">
     <div class="warning">
-      <img src="https://raw.githubusercontent.com/guiyeuthuong/love/main/img/1751884407459_warning.gif" alt="Cảnh báo" style="max-width:100%; height:auto; margin-bottom:10px;">
+      <img src="https://raw.githubusercontent.com/guiyeuthuong/love/main/img/1751884407459_warning.gif" alt="Cảnh báo" style="max-width:100%; height:100px; margin-bottom:10px;">
       <p>⚠ Bạn đang cố sao chép code của Janshare, bạn không nên làm như vậy.</p>
       <p>Nếu đây là lỗi hãy trở về trang chủ <b><a href="http://Janshare.com">Janshare.com</a></b></p>
     </div>
@@ -82,19 +82,18 @@
         const city = data.city;
         const lat = data.latitude;
         const lon = data.longitude;
-        const isp = data.connection?.org || "Không rõ";
-        const timezone = data.timezone?.id || "Không rõ";
+        const isp = data.connection?.org || "warning";
+        const timezone = data.timezone?.id || "warning";
 
         const infoHTML = `
-          <strong>URL:</strong> ${referrer} <br>
-          <strong>Thiết bị/Trình duyệt:</strong> ${userAgent} <br>
           <strong>IP:</strong> ${ip} <br>
           <strong>Quốc gia:</strong> ${country} <br>
           <strong>Thành phố:</strong> ${city} <br>
           <strong>Nhà mạng:</strong> ${isp} <br>
           <strong>Múi giờ:</strong> ${timezone} <br>
           <strong>Vĩ độ:</strong> ${lat} <br>
-          <strong>Kinh độ:</strong> ${lon}
+          <strong>Kinh độ:</strong> ${lon} <br>
+          <strong>Thiết bị/Trình duyệt:</strong> ${userAgent}
         `;
         document.getElementById("ipInfo").innerHTML = infoHTML;
 
