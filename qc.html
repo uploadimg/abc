@@ -1,0 +1,259 @@
+﻿<div id="quangcaotaf"></div>
+
+<style>
+  #taf-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9998;
+    animation: taf-fadein 0.2s ease;
+  }
+
+  #taf-popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(420px, 92vw);
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    z-index: 9999;
+    overflow: hidden;
+    animation: taf-slidein 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  @keyframes taf-fadein {
+    from { opacity: 0 } to { opacity: 1 }
+  }
+  @keyframes taf-slidein {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.9) }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1) }
+  }
+
+  .taf-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 8px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .taf-header-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ee4d2d;
+    background: #fff1ed;
+    border: 1px solid #ffd2c7;
+    border-radius: 999px;
+    padding: 3px 10px;
+    letter-spacing: 0.3px;
+  }
+
+  .taf-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: #f5f5f5;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #888;
+    line-height: 1;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .taf-close:hover { background: #ffe1d6; color: #ee4d2d; }
+
+  .taf-body {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 16px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .taf-body:hover { background: #fff7f5; }
+
+  .taf-img {
+    width: 88px;
+    height: 88px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #f5f5f5;
+    border: 1px solid #f0f0f0;
+  }
+
+  .taf-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .taf-title {
+    font-size: 25px;
+    font-weight: 700;
+    color: #222;
+    line-height: 1.5;
+  }
+
+  .taf-btn {
+    display: inline-block;
+    background: linear-gradient(90deg, #ee4d2d, #ff7337);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    box-shadow: 0 3px 8px rgba(238,77,45,0.3);
+    width: fit-content;
+    transition: transform 0.15s;
+  }
+  .taf-btn:hover { transform: scale(1.04); }
+
+  /* Mobile: ảnh lớn hơn, chữ to hơn */
+  @media (max-width: 480px) {
+    .taf-img { width: 80px; height: 80px; }
+    .taf-title { font-size: 13px; }
+    .taf-btn { font-size: 12px; padding: 7px 14px; }
+    .taf-body { padding: 14px; gap: 12px; }
+  }
+
+  /* Máy tính: popup rộng hơn, ảnh to hơn */
+  @media (min-width: 768px) {
+    .taf-img { width: 100px; height: 100px; }
+    .taf-title { font-size: 15px; }
+    .taf-btn { font-size: 13px; padding: 9px 18px; }
+    .taf-body { padding: 20px; gap: 16px; }
+    .taf-header { padding: 14px 20px 10px; }
+  }
+
+  #taf-trigger {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ee4d2d, #ff7337);
+    border: none;
+    cursor: pointer;
+    z-index: 9997;
+    box-shadow: 0 4px 16px rgba(238,77,45,0.4);
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    transition: transform 0.2s;
+  }
+  #taf-trigger:hover { transform: scale(1.1); }
+
+  #taf-trigger::after {
+    content: '';
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 10px; height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    border: 2px solid #ff7337;
+  }
+</style>
+
+<script>
+  const SHEET_URL = "https://docs.google.com/spreadsheets/d/1ChuFjojyi_G4Bb6R7PMuc2wpKgQ70ky7Ts4O5WU0uuE/gviz/tq?tqx=out:json&gid=1499130905";
+  let lastIdx = -1;
+  let adsList = [];
+
+  async function loadadstaf() {
+    try {
+      const res = await fetch(SHEET_URL);
+      const text = await res.text();
+      const json = JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
+      adsList = json.table.rows.slice(1).map(r => ({
+        tagqc:    r.c[1]?.v || "",
+        imgqc:    r.c[2]?.v || "",
+        linkqc:   r.c[3]?.v || "#",
+        tieudeqc: r.c[4]?.v || "Không có tiêu đề"
+      }));
+      buildPopupDOM();
+      showNextAd();
+    } catch {
+      console.warn("TAF Ads: load lỗi");
+    }
+  }
+
+  function buildPopupDOM() {
+    document.getElementById("quangcaotaf").innerHTML = `
+      <div id="taf-overlay"></div>
+      <div id="taf-popup">
+        <div class="taf-header">
+          <span class="taf-header-label" id="taf-tag"></span>
+          <button class="taf-close" id="taf-close-btn" title="Đóng">Đóng</button>
+        </div>
+        <a class="taf-body" id="taf-link" href="#" target="_blank">
+          <img class="taf-img" id="taf-img" src="" alt="">
+          <div class="taf-content">
+            <div class="taf-title" id="taf-title"></div>
+            <div class="taf-btn">Xem ngay</div>
+          </div>
+        </a>
+      </div>
+      <button id="taf-trigger" title="Xem ưu đãi">🎁</button>
+    `;
+
+    document.getElementById("taf-close-btn").addEventListener("click", closePopup);
+    document.getElementById("taf-trigger").addEventListener("click", reopenPopup);
+  }
+
+  function randomAd() {
+    let i;
+    do { i = Math.floor(Math.random() * adsList.length); }
+    while (i === lastIdx && adsList.length > 1);
+    lastIdx = i;
+    return adsList[i];
+  }
+
+  function showNextAd() {
+    const ad = randomAd();
+    if (!ad) return;
+    document.getElementById("taf-tag").textContent   = ad.tagqc;
+    document.getElementById("taf-img").src           = ad.imgqc;
+    document.getElementById("taf-title").textContent = ad.tieudeqc;
+    document.getElementById("taf-link").href         = ad.linkqc;
+    openPopup();
+  }
+
+  function openPopup() {
+    const popup   = document.getElementById("taf-popup");
+    const overlay = document.getElementById("taf-overlay");
+    const trigger = document.getElementById("taf-trigger");
+    if (popup) { popup.style.display = "block"; popup.style.animation = "none"; void popup.offsetWidth; popup.style.animation = ""; }
+    if (overlay) overlay.style.display = "block";
+    if (trigger) trigger.style.display = "none";
+  }
+
+  function closePopup() {
+    const popup   = document.getElementById("taf-popup");
+    const overlay = document.getElementById("taf-overlay");
+    const trigger = document.getElementById("taf-trigger");
+    if (popup)   popup.style.display   = "none";
+    if (overlay) overlay.style.display = "none";
+    if (trigger) trigger.style.display = "flex";
+  }
+
+  function reopenPopup() {
+    showNextAd();
+  }
+
+  loadadstaf();
+</script>
